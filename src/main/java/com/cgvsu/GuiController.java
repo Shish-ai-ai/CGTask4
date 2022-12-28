@@ -10,13 +10,16 @@ import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.io.IOException;
 import java.io.File;
+import java.util.HashMap;
 import javax.vecmath.Vector3f;
 
 import com.cgvsu.model.Model;
@@ -25,7 +28,9 @@ import com.cgvsu.render_engine.Camera;
 
 public class GuiController {
 
-    RenderStyle renderStyle = RenderStyle.Polygonal_Grid;
+    Color fillColor = Color.AQUA;
+
+    HashMap<RenderStyle, Boolean> renderProperties = new HashMap<>();
 
     final private float TRANSLATION = 0.5F;
 
@@ -38,7 +43,7 @@ public class GuiController {
     private Model mesh = null;
 
     private Camera camera = new Camera(
-            new Vector3f(0, 00, 100),
+            new Vector3f(0, 0, 100),
             new Vector3f(0, 0, 0),
             1.0F, 1, 0.01F, 100);
 
@@ -52,6 +57,9 @@ public class GuiController {
         timeline = new Timeline();
         timeline.setCycleCount(Animation.INDEFINITE);
 
+        renderProperties.put(RenderStyle.Polygonal_Grid,true);
+        renderProperties.put(RenderStyle.Color_Fill,false);
+
         KeyFrame frame = new KeyFrame(Duration.millis(15), event -> {
             double width = canvas.getWidth();
             double height = canvas.getHeight();
@@ -60,7 +68,8 @@ public class GuiController {
             camera.setAspectRatio((float) (width / height));
 
             if (mesh != null) {
-                RenderEngine.render(canvas.getGraphicsContext2D(), camera, mesh, (int) width, (int) height);
+                ModelUtils.triangulatePolygons(mesh);
+                RenderEngine.render(canvas.getGraphicsContext2D(), camera, mesh, (int) width, (int) height, fillColor, renderProperties);
             }
         });
 
@@ -73,11 +82,6 @@ public class GuiController {
         ModelUtils.recalculateNormals(mesh);
     }
 
-    @FXML
-    private void triangulatePolygons(){
-        ModelUtils.triangulatePolygons(mesh);
-        RenderEngine.render(canvas.getGraphicsContext2D(), camera, mesh, (int) canvas.getWidth(), (int) canvas.getHeight());
-    }
     @FXML
     private void onOpenModelMenuItemClick() {
         FileChooser fileChooser = new FileChooser();
@@ -99,19 +103,15 @@ public class GuiController {
 
         }
     }
+
     @FXML
-    private void setRenderStyleToPolygonalGrid(){
-        this.renderStyle = RenderStyle.Polygonal_Grid;
-        if (mesh != null) {
-            RenderEngine.render(canvas.getGraphicsContext2D(), camera, mesh, (int) canvas.getWidth(), (int) canvas.getHeight());
-        }
+    private void switchPolygonalGrid() {
+        renderProperties.put(RenderStyle.Polygonal_Grid, !renderProperties.get(RenderStyle.Polygonal_Grid));
     }
+
     @FXML
-    private void setRenderStyleToColorFill(){
-        this.renderStyle = RenderStyle.Color_Fill;
-        if (mesh != null) {
-            RenderEngine.render(canvas.getGraphicsContext2D(), camera, mesh, (int) canvas.getWidth(), (int) canvas.getHeight());
-        }
+    private void setRenderStyleToColorFill() {
+        renderProperties.put(RenderStyle.Color_Fill, !renderProperties.get(RenderStyle.Color_Fill));
     }
 
     @FXML

@@ -2,6 +2,7 @@ package com.cgvsu.model;
 
 import com.cgvsu.math.Vector3f;
 
+import java.time.chrono.MinguoDate;
 import java.util.ArrayList;
 
 import static com.cgvsu.math.Vector3f.*;
@@ -37,11 +38,51 @@ public class ModelUtils {
         return sum(saved).divide(saved.size());
     }
 
+    public static ArrayList<Polygon> triangulatePolygon(Polygon polygon) {
+        ArrayList<Polygon> triangles = new ArrayList<>();
+        int index = 0;
+        while (polygon.getVertexIndices().size() > 2) {
+
+            Polygon triangle = new Polygon();
+
+            // Добавляем вершины в треугольник
+            triangle.getVertexIndices().add(
+                    polygon.getVertexIndices().get(index));
+            triangle.getVertexIndices().add(
+                    polygon.getVertexIndices().get(index + 1));
+            triangle.getVertexIndices().add(
+                    polygon.getVertexIndices().get(index + 2));
+
+
+            if (polygon.getTextureVertexIndices().size() != 0) {
+                triangle.getTextureVertexIndices().add(
+                        polygon.getTextureVertexIndices().get(index));
+                triangle.getTextureVertexIndices().add(
+                        polygon.getTextureVertexIndices().get(index + 1));
+                triangle.getTextureVertexIndices().add(
+                        polygon.getTextureVertexIndices().get(index + 2));
+            }
+
+            if (polygon.getNormalIndices().size() != 0) {
+                triangle.getNormalIndices().add(
+                        polygon.getNormalIndices().get(index));
+                triangle.getNormalIndices().add(
+                        polygon.getNormalIndices().get(index + 1));
+                triangle.getNormalIndices().add(
+                        polygon.getNormalIndices().get(index + 2));
+            }
+
+
+            polygon.getVertexIndices().remove(index + 1);
+            triangles.add(triangle);
+        }
+        return triangles;
+    }
     public static void triangulatePolygons(Model model) {
         ArrayList<Polygon> triangles = new ArrayList<>();
         for (Polygon polygon : model.polygons) {
             int index = 0;
-            while (polygon.getVertexIndices().size() > 2) { //Циклическая проверка для триангуляции
+            while (polygon.getVertexIndices().size() > 2) {
 
                 Polygon triangle = new Polygon();
 

@@ -1,22 +1,37 @@
 package com.cgvsu.render_engine;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
+import com.cgvsu.Utils;
 import com.cgvsu.math.Vector3f;
+import com.cgvsu.rasterization.*;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javax.vecmath.*;
 import com.cgvsu.model.Model;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
+
 import static com.cgvsu.render_engine.GraphicConveyor.*;
 
 public class RenderEngine {
+
 
     public static void render(
             final GraphicsContext graphicsContext,
             final Camera camera,
             final Model mesh,
             final int width,
-            final int height)
+            final int height,
+            Color fillColor,
+            HashMap<RenderStyle,Boolean> renderProperties)
     {
+        double redColor = fillColor.getRed();
+        double greenColor = fillColor.getGreen();
+        double blueColor = fillColor.getBlue();
+
+        GraphicsUtils<Canvas> graphicsUtils = new DrawUtilsJavaFX(graphicsContext.getCanvas());
         Matrix4f modelMatrix = rotateScaleTranslate();
         Matrix4f viewMatrix = camera.getViewMatrix();
         Matrix4f projectionMatrix = camera.getProjectionMatrix();
@@ -39,20 +54,27 @@ public class RenderEngine {
                 resultPoints.add(resultPoint);
             }
 
-            for (int vertexInPolygonInd = 1; vertexInPolygonInd < nVerticesInPolygon; ++vertexInPolygonInd) {
-                graphicsContext.strokeLine(
-                        resultPoints.get(vertexInPolygonInd - 1).x,
-                        resultPoints.get(vertexInPolygonInd - 1).y,
-                        resultPoints.get(vertexInPolygonInd).x,
-                        resultPoints.get(vertexInPolygonInd).y);
-            }
+            if (renderProperties.get(RenderStyle.Polygonal_Grid)) {
+                for (int vertexInPolygonInd = 1; vertexInPolygonInd < nVerticesInPolygon; ++vertexInPolygonInd) {
+                    graphicsContext.strokeLine(
+                            resultPoints.get(vertexInPolygonInd - 1).x,
+                            resultPoints.get(vertexInPolygonInd - 1).y,
+                            resultPoints.get(vertexInPolygonInd).x,
+                            resultPoints.get(vertexInPolygonInd).y);
+                }
 
-            if (nVerticesInPolygon > 0)
-                graphicsContext.strokeLine(
-                        resultPoints.get(nVerticesInPolygon - 1).x,
-                        resultPoints.get(nVerticesInPolygon - 1).y,
-                        resultPoints.get(0).x,
-                        resultPoints.get(0).y);
+                if (nVerticesInPolygon > 0)
+                    graphicsContext.strokeLine(
+                            resultPoints.get(nVerticesInPolygon - 1).x,
+                            resultPoints.get(nVerticesInPolygon - 1).y,
+                            resultPoints.get(0).x,
+                            resultPoints.get(0).y);
+
+            } if(renderProperties.get(RenderStyle.Color_Fill)){
+                Rasterization.fillTriangle(graphicsUtils,new MyPoint2D(resultPoints.get(0).x,resultPoints.get(0).y),
+                    new MyPoint2D(resultPoints.get(1).x,resultPoints.get(1).y), new MyPoint2D(resultPoints.get(2).x,resultPoints.get(2).y),
+                    new MyColor(redColor,greenColor,blueColor),new MyColor(redColor,greenColor,blueColor),new MyColor(redColor,greenColor,blueColor));
+            }
         }
     }
 }
