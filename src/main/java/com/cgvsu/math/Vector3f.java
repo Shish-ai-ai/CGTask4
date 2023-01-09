@@ -5,11 +5,18 @@ import java.util.ArrayList;
 // Это заготовка для собственной библиотеки для работы с линейной алгеброй
 public class Vector3f {
 
+    public Vector3f(float x, float y, float z, float w) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.w = w;
+    }
     public Vector3f(float x, float y, float z) {
         this.x = x;
         this.y = y;
         this.z = z;
     }
+
 
     public boolean equals(Vector3f other) {
         // todo: желательно, чтобы это была глобальная константа
@@ -20,6 +27,7 @@ public class Vector3f {
     public float x;
     public float y;
     public float z;
+    public float w = 1;
 
     public float getX() {
         return x;
@@ -31,6 +39,9 @@ public class Vector3f {
 
     public float getZ() {
         return z;
+    }
+    public float getW() {
+        return w;
     }
 
     public Vector3f multiplication(float num){
@@ -82,5 +93,12 @@ public class Vector3f {
 
     public static Vector3f fromTwoPoints(Vector3f vertex1, Vector3f vertex2){
         return new Vector3f(vertex2.getX() - vertex1.getX(), vertex2.getY() - vertex1.getY(), vertex2.getZ()- vertex1.getZ());
+    }
+
+    public void applyMatrix(float[][] matrix) {
+        Vector3f result = Matrix.multiplyVector(matrix, this);
+        this.x = result.x;
+        this.y = result.y;
+        this.z = result.z;
     }
 }
